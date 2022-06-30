@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model cargo {
+  id      Int       @id @default(autoincrement())
+  nome    String
+  membros membros[]
+}
+
+model logradouro {
+  id       Int       @id @default(autoincrement())
+  endereco String
+  numero   Int
+  bairro   String
+  cidade   String
+  membros  membros[]
+}
+
+model membros {
+  id            Int        @id @default(autoincrement())
+  nome          String
+  telefone      Decimal    @db.Decimal
+  pai           String
+  mae           String
+  dtNascimento  DateTime   @db.Date
+  dtBatismo     DateTime   @db.Date
+  estCivil      String
+  id_cargo      Int
+  id_logradouro Int
+  url_foto      Json?
+  cargo         cargo      @relation(fields: [id_cargo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_membros_cargos")
+  logradouro    logradouro @relation(fields: [id_logradouro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_membros_logradouro")
+}
