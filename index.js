@@ -2,9 +2,14 @@ const express = require('express')
 const { PrismaClient } = require('@prisma/client');
 const app = express()
 const cors = require('cors');
+var moment = require('moment');
 const prisma = new PrismaClient()
 app.use(cors())
+app.use(express.json({ limit: '50mb' }))
 
+app.listen(4041, () => {
+  console.log("Servidor Express Funcionando!!")
+})
 
 //Busca (ID,NOME,URLIMG, NOME CARGOS) DOS MEMBROS PARA LISTAR NA TELA HOME
 app.get('/membros', async (req, res) => {
@@ -28,10 +33,10 @@ app.get('/membros', async (req, res) => {
 
 //BUSCA OS MEMBROS QUE COMECAO COM O CONTEUDO RETORNADO DO FRONT
 app.get('/buscar/:nome', async (req, res) => {
-  const {nome} = req.params
+  const { nome } = req.params
   const membros = await prisma.membros.findMany({
     where: {
-      nome:{
+      nome: {
         startsWith: nome,
         mode: 'insensitive'
       }
@@ -59,7 +64,6 @@ app.get('/cargos', async (req, res) => {
   res.send(cargos);
 })
 
-
 //Busca O MEMBRO SELECIONADO PELO ID
 app.get("/membro/:id", async (req, res) => {
   const { id } = req.params;
@@ -81,7 +85,80 @@ app.get("/membro/:id", async (req, res) => {
   res.send(membro)
 });
 
+app.post('/cadastrar', async (req, res) => {
+  const membro = req.body
+  var nascimento = moment(membro.dtNascimento).format("YYYY-MM-DD")
+  var batismo = moment(membro.dtBatismo).format("YYYY-MM-DD")
+  var dtNascimento = new Date(nascimento)
+  var dtBatismo = new Date(batismo);
 
-app.listen(4041, () => {
-  console.log("Servidor Express Funcionando!!")
+
+  const response = await prisma.logradouro.create({
+    data: {
+      endereco: membro.endereco,
+      numero: parseInt(membro.numero),
+      bairro: membro.bairro,
+      cidade: membro.cidade,
+      membros: {
+        create: {
+          nome: membro.nome,
+          telefone: membro.telefone,
+          pai: membro.pai,
+          mae: membro.mae,
+          dtNascimento: dtNascimento,
+          dtBatismo: dtBatismo,
+          estCivil: membro.estCivil,
+          id_cargo: membro.id_cargo,
+          url_foto: membro.url_foto,
+        }
+      }
+    },
+    select: {
+      id: true
+    }
+  })
+res.send(response)
+
 })
+
+app.put('/atualizar', async (req, res) => {
+  const membro = req.body
+  var nascimento = moment(membro.dtNascimento).format("YYYY-MM-DD")
+  var batismo = moment(membro.dtBatismo).format("YYYY-MM-DD")
+  var dtNascimento = new Date(nascimento)
+  var dtBatismo = new Date(batismo);
+
+
+  const response = await prisma.membros.update({
+    where: {
+      id: membro.id
+    },
+    update: {
+      nome: membro.nome,
+      telefone: membro.telefone,
+      pai: membro.pai,
+      mae: membro.mae,
+      dtNascimento: dtNascimento,
+      dtBatismo: dtBatismo,
+      estCivil: membro.estCivil,
+      id_cargo: membro.id_cargo,
+      url_foto: membro.url_foto,
+      logradouro: {
+        update: {
+          endereco: membro.endereco,
+          numero: parseInt(membro.numero),
+          bairro: membro.bairro,
+          cidade: membro.cidade,
+        }
+      }
+    }
+  }).catch((e) => {
+    console.log(e)
+    throw e
+  }).finally(async () => {
+      await prisma.$disconnect()
+    })
+    res.send(response)
+})
+
+
