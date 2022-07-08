@@ -117,10 +117,11 @@ app.post('/cadastrar', async (req, res) => {
       id: true
     }
   })
-res.send(response)
+  res.send(response)
 
 })
 
+//ATUALIZAR OS  DADOS DO MEMBRO 
 app.put('/atualizar', async (req, res) => {
   const membro = req.body
   var nascimento = moment(membro.dtNascimento).format("YYYY-MM-DD")
@@ -128,37 +129,40 @@ app.put('/atualizar', async (req, res) => {
   var dtNascimento = new Date(nascimento)
   var dtBatismo = new Date(batismo);
 
-
-  const response = await prisma.membros.update({
+  const response = await prisma.logradouro.update({
     where: {
-      id: membro.id
+      id: parseInt(membro.id_logradouro)
     },
-    update: {
-      nome: membro.nome,
-      telefone: membro.telefone,
-      pai: membro.pai,
-      mae: membro.mae,
-      dtNascimento: dtNascimento,
-      dtBatismo: dtBatismo,
-      estCivil: membro.estCivil,
-      id_cargo: membro.id_cargo,
-      url_foto: membro.url_foto,
-      logradouro: {
-        update: {
-          endereco: membro.endereco,
-          numero: parseInt(membro.numero),
-          bairro: membro.bairro,
-          cidade: membro.cidade,
+    data: {
+      endereco: membro.endereco,
+      numero: parseInt(membro.numero),
+      bairro: membro.bairro,
+      cidade: membro.cidade,
+      membros: {
+        update:{
+          where: {
+            id: membro.id,
+          },
+          data:{
+            nome: membro.nome,
+            telefone: membro.telefone,
+            pai: membro.pai,
+            mae: membro.mae,
+            dtNascimento: dtNascimento,
+            dtBatismo: dtBatismo,
+            estCivil: membro.estCivil,
+            id_cargo: membro.id_cargo,
+            url_foto: membro.url_foto
+          }
         }
       }
+    },
+    select: {
+      id: true
     }
-  }).catch((e) => {
-    console.log(e)
-    throw e
-  }).finally(async () => {
-      await prisma.$disconnect()
-    })
-    res.send(response)
-})
+
+  })
+res.send(response)
+  })
 
 
