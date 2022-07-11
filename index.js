@@ -109,7 +109,7 @@ app.post('/cadastrar', async (req, res) => {
           dtBatismo: dtBatismo,
           estCivil: membro.estCivil,
           id_cargo: membro.id_cargo,
-          url_foto: membro.url_foto,
+          url_foto:membro.url_foto ? membro.url_foto : undefined
         }
       }
     },
@@ -128,7 +128,6 @@ app.put('/atualizar', async (req, res) => {
   var batismo = moment(membro.dtBatismo).format("YYYY-MM-DD")
   var dtNascimento = new Date(nascimento)
   var dtBatismo = new Date(batismo);
-
   const response = await prisma.logradouro.update({
     where: {
       id: parseInt(membro.id_logradouro)
@@ -152,7 +151,7 @@ app.put('/atualizar', async (req, res) => {
             dtBatismo: dtBatismo,
             estCivil: membro.estCivil,
             id_cargo: membro.id_cargo,
-            url_foto: membro.url_foto
+            url_foto: membro.url_foto ? membro.url_foto : undefined
           }
         }
       }

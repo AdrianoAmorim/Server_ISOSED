@@ -33,7 +33,7 @@ model membros {
   estCivil      String
   id_cargo      Int
   id_logradouro Int
-  url_foto      Json?
+  url_foto      Json?      
   cargo         cargo      @relation(fields: [id_cargo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_membros_cargos")
   logradouro    logradouro @relation(fields: [id_logradouro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_membros_logradouro")
 }
