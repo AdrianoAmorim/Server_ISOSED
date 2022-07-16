@@ -164,4 +164,27 @@ app.put('/atualizar', async (req, res) => {
 res.send(response)
   })
 
+app.delete('/deletar',async(req,res) =>{
+ const id_log = req.query.id_logradouro;
+ const id_membro = req.query.id_membro;
+ console.log(id_membro)
+ let response = await prisma.membros.delete({
+  where:{
+    id: parseInt(id_membro)
+  },
+  select:{
+    id:true
+  }
+  
+ })
+ response = await prisma.logradouro.delete({
+  where:{
+    id: parseInt(id_log) 
+  },
+  select:{
+    id:true
+  }
+ })
 
+ res.send(response)
+})
