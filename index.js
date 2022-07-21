@@ -165,8 +165,12 @@ res.send(response)
   })
 
 app.delete('/deletar',async(req,res) =>{
- const id_log = req.query.id_logradouro;
+  const ids = req.body
+
+  console.log(ids)
+ /*const id_log = req.query.id_logradouro;
  const id_membro = req.query.id_membro;
+
  console.log(id_membro)
  let response = await prisma.membros.delete({
   where:{
@@ -187,4 +191,5 @@ app.delete('/deletar',async(req,res) =>{
  })
 
  res.send(response)
+ */
 })
