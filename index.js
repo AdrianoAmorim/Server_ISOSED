@@ -109,7 +109,7 @@ app.post('/cadastrar', async (req, res) => {
           dtBatismo: dtBatismo,
           estCivil: membro.estCivil,
           id_cargo: membro.id_cargo,
-          url_foto:membro.url_foto ? membro.url_foto : undefined
+          url_foto: membro.url_foto ? membro.url_foto : undefined
         }
       }
     },
@@ -138,11 +138,11 @@ app.put('/atualizar', async (req, res) => {
       bairro: membro.bairro,
       cidade: membro.cidade,
       membros: {
-        update:{
+        update: {
           where: {
             id: membro.id,
           },
-          data:{
+          data: {
             nome: membro.nome,
             telefone: membro.telefone,
             pai: membro.pai,
@@ -161,35 +161,33 @@ app.put('/atualizar', async (req, res) => {
     }
 
   })
-res.send(response)
+  res.send(response)
+})
+
+app.delete('/deletar', async (req, res) => {
+  //const ids = await req.body
+
+  //console.log(ids)
+  const id_log = req.query.id_logradouro;
+  const id_membro = req.query.id_membro;
+ 
+  console.log(id_membro)
+  let response = await prisma.membros.delete({
+   where:{
+     id: parseInt(id_membro)
+   },
+   select:{
+     id:true
+   }
+   
   })
-
-app.delete('/deletar',async(req,res) =>{
-  const ids = req.body
-
-  console.log(ids)
- /*const id_log = req.query.id_logradouro;
- const id_membro = req.query.id_membro;
-
- console.log(id_membro)
- let response = await prisma.membros.delete({
-  where:{
-    id: parseInt(id_membro)
-  },
-  select:{
-    id:true
-  }
-  
- })
- response = await prisma.logradouro.delete({
-  where:{
-    id: parseInt(id_log) 
-  },
-  select:{
-    id:true
-  }
- })
-
- res.send(response)
- */
+  response = await prisma.logradouro.delete({
+   where:{
+     id: parseInt(id_log) 
+   },
+   select:{
+     id:true
+   }
+  })
+  res.send(response)
 })
