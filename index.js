@@ -31,7 +31,7 @@ app.get('/membros', async (req, res) => {
   res.send(membros)
 })
 
-//BUSCA OS MEMBROS QUE COMECAO COM O CONTEUDO RETORNADO DO FRONT
+//BUSCA OS MEMBROS NO CAMPO DE BUSCA DA HOME
 app.get('/buscar/:nome', async (req, res) => {
   const { nome } = req.params
   const membros = await prisma.membros.findMany({
@@ -57,13 +57,11 @@ app.get('/buscar/:nome', async (req, res) => {
   });
   res.send(membros)
 })
-
 //Busca TODOS OS CARGOS EXISTENTES
 app.get('/cargos', async (req, res) => {
   const cargos = await prisma.cargo.findMany();
   res.send(cargos);
 })
-
 //Busca O MEMBRO SELECIONADO PELO ID
 app.get("/membro/:id", async (req, res) => {
   const { id } = req.params;
@@ -84,7 +82,7 @@ app.get("/membro/:id", async (req, res) => {
   })
   res.send(membro)
 });
-
+//CADASTRAR NOVO MEMBRO
 app.post('/cadastrar', async (req, res) => {
   const membro = req.body
   var nascimento = moment(membro.dtNascimento).format("YYYY-MM-DD")
@@ -163,18 +161,13 @@ app.put('/atualizar', async (req, res) => {
   })
   res.send(response)
 })
-
+//DELETAR O MEMBRO ESCOLHIDO P EDITAR
 app.delete('/deletar', async (req, res) => {
-  //const ids = await req.body
+  const ids = await req.body
 
-  //console.log(ids)
-  const id_log = req.query.id_logradouro;
-  const id_membro = req.query.id_membro;
- 
-  console.log(id_membro)
   let response = await prisma.membros.delete({
    where:{
-     id: parseInt(id_membro)
+     id: parseInt(ids.id_membro)
    },
    select:{
      id:true
@@ -183,7 +176,7 @@ app.delete('/deletar', async (req, res) => {
   })
   response = await prisma.logradouro.delete({
    where:{
-     id: parseInt(id_log) 
+     id: parseInt(ids.id_logradouro) 
    },
    select:{
      id:true
