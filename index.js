@@ -86,7 +86,7 @@ app.get("/membro/:id", async (req, res) => {
 app.post('/cadastrar', async (req, res) => {
   const membro = req.body
   var nascimento = moment(membro.dtNascimento).format("YYYY-MM-DD")
-  var batismo = moment(membro.dtBatismo).format("YYYY-MM-DD")
+  var batismo = moment(membro.dtBatismoo).format("YYYY-MM-DD")
   var dtNascimento = new Date(nascimento)
   var dtBatismo = new Date(batismo);
 
