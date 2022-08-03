@@ -1,5 +1,5 @@
 const express = require('express')
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient,Prisma } = require('@prisma/client');
 const app = express()
 const cors = require('cors');
 var moment = require('moment');
@@ -13,6 +13,8 @@ app.listen(4041, () => {
 
 //Busca (ID,NOME,URLIMG, NOME CARGOS) DOS MEMBROS PARA LISTAR NA TELA HOME
 app.get('/membros', async (req, res) => {
+  
+  try{
   const membros = await prisma.membros.findMany({
     select: {
       id: true,
@@ -28,12 +30,21 @@ app.get('/membros', async (req, res) => {
       nome: "asc"
     }
   });
-  res.send(membros)
+  res.json(membros)
+}catch(e){
+  if (e instanceof Prisma.PrismaClientValidationError) {
+    res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+  }
+  if (e instanceof Prisma.PrismaClientInitializationError) {
+    res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }
+}
 })
 
 //BUSCA OS MEMBROS NO CAMPO DE BUSCA DA HOME
 app.get('/buscar/:nome', async (req, res) => {
   const { nome } = req.params
+try{
   const membros = await prisma.membros.findMany({
     where: {
       nome: {
@@ -55,16 +66,37 @@ app.get('/buscar/:nome', async (req, res) => {
       nome: "asc"
     }
   });
-  res.send(membros)
+  
+  res.json(membros)
+}
+catch(e){
+  if (e instanceof Prisma.PrismaClientValidationError) {
+    res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+  }
+  if (e instanceof Prisma.PrismaClientInitializationError) {
+    res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }
+}
 })
 //Busca TODOS OS CARGOS EXISTENTES
 app.get('/cargos', async (req, res) => {
+  try{
   const cargos = await prisma.cargo.findMany();
-  res.send(cargos);
+  res.json(cargos);
+  }
+  catch(e){
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+    }
+  }
 })
 //Busca O MEMBRO SELECIONADO PELO ID
 app.get("/membro/:id", async (req, res) => {
   const { id } = req.params;
+  try{
   const membro = await prisma.membros.findUnique({
     where: {
       id: parseInt(id)
@@ -80,7 +112,16 @@ app.get("/membro/:id", async (req, res) => {
       }
     }
   })
-  res.send(membro)
+  res.json(membro)
+}
+catch(e){
+  if (e instanceof Prisma.PrismaClientValidationError) {
+    res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+  }
+  if (e instanceof Prisma.PrismaClientInitializationError) {
+    res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }
+}
 });
 //CADASTRAR NOVO MEMBRO
 app.post('/cadastrar', async (req, res) => {
@@ -90,7 +131,7 @@ app.post('/cadastrar', async (req, res) => {
   var dtNascimento = new Date(nascimento)
   var dtBatismo = new Date(batismo);
 
-
+try{
   const response = await prisma.logradouro.create({
     data: {
       endereco: membro.endereco,
@@ -115,7 +156,16 @@ app.post('/cadastrar', async (req, res) => {
       id: true
     }
   })
-  res.send(response)
+  res.json(response)
+}
+catch(e){
+  if (e instanceof Prisma.PrismaClientValidationError) {
+    res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+  }
+  if (e instanceof Prisma.PrismaClientInitializationError) {
+    res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }
+}
 
 })
 
@@ -126,6 +176,7 @@ app.put('/atualizar', async (req, res) => {
   var batismo = moment(membro.dtBatismo).format("YYYY-MM-DD")
   var dtNascimento = new Date(nascimento)
   var dtBatismo = new Date(batismo);
+  try{
   const response = await prisma.logradouro.update({
     where: {
       id: parseInt(membro.id_logradouro)
@@ -159,12 +210,21 @@ app.put('/atualizar', async (req, res) => {
     }
 
   })
-  res.send(response)
+  res.json(response)
+}
+catch(e){
+  if (e instanceof Prisma.PrismaClientValidationError) {
+    res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+  }
+  if (e instanceof Prisma.PrismaClientInitializationError) {
+    res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }
+}
 })
 //DELETAR O MEMBRO ESCOLHIDO P EDITAR
 app.delete('/deletar', async (req, res) => {
   const ids = await req.body
-
+try{
   let response = await prisma.membros.delete({
    where:{
      id: parseInt(ids.id_membro)
@@ -182,5 +242,14 @@ app.delete('/deletar', async (req, res) => {
      id:true
    }
   })
-  res.send(response)
+  res.json(response)
+}
+catch(e){
+  if (e instanceof Prisma.PrismaClientValidationError) {
+    res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+  }
+  if (e instanceof Prisma.PrismaClientInitializationError) {
+    res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }
+}
 })
