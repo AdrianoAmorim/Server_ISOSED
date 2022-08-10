@@ -42,8 +42,8 @@ app.get('/membros', async (req, res) => {
 })
 
 //BUSCA OS MEMBROS NO CAMPO DE BUSCA DA HOME
-app.get('/buscar/:nome', async (req, res) => {
-  const { nome } = req.params
+app.get('/buscar', async (req, res) => {
+  const nome  = req.query.nome
 try{
   const membros = await prisma.membros.findMany({
     where: {
@@ -71,6 +71,7 @@ try{
 }
 catch(e){
   if (e instanceof Prisma.PrismaClientValidationError) {
+    
     res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
   }
   if (e instanceof Prisma.PrismaClientInitializationError) {
