@@ -8,7 +8,7 @@ app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 
 app.listen(4041, () => {
-  console.log("Servidor Express Funcionando!!")
+  console.log("Servidorr Express Funcionando!!")
 })
 
 //Busca (ID,NOME,URLIMG, NOME CARGOS) DOS MEMBROS PARA LISTAR NA TELA HOME
