@@ -7,8 +7,8 @@ const prisma = new PrismaClient()
 app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 
-app.listen(4041, () => {
-  console.log("Servidorr Express Funcionando!!")
+app.listen(process.env.PORT || 4041,'0.0.0.0', () => {
+  console.log("Servidor NodeJs Funcionando!!")
 })
 
 //Busca (ID,NOME,URLIMG, NOME CARGOS) DOS MEMBROS PARA LISTAR NA TELA HOME
