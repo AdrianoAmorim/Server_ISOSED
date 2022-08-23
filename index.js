@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 
-app.listen(process.env.PORT || 4041, () => {
+app.listen(process.env.PORT || 4041,"0.0.0.0", () => {
   console.log("Servidor NodeJs Funcionando!!")
 })
 
