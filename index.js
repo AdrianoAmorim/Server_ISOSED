@@ -37,6 +37,8 @@ app.get('/membros', async (req, res) => {
   }
   if (e instanceof Prisma.PrismaClientInitializationError) {
     res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }else{
+    res.json({error:true,msg:e})
   }
 }
 })
@@ -76,6 +78,8 @@ catch(e){
   }
   if (e instanceof Prisma.PrismaClientInitializationError) {
     res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }else{
+    res.json({error:true,msg:e})
   }
 }
 })
@@ -91,6 +95,8 @@ app.get('/cargos', async (req, res) => {
     }
     if (e instanceof Prisma.PrismaClientInitializationError) {
       res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+    }else{
+      res.json({error:true,msg:e})
     }
   }
 })
@@ -127,6 +133,8 @@ catch(e){
   }
   if (e instanceof Prisma.PrismaClientInitializationError) {
     res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }else{
+    res.json({error:true,msg:e})
   }
 }
 });
@@ -142,7 +150,7 @@ try{
   const response = await prisma.logradouro.create({
     data: {
       endereco: membro.endereco,
-      numero: parseInt(membro.numero),
+      numero: membro.numero,
       bairro: membro.bairro,
       cidade: membro.cidade,
       membros: {
@@ -171,6 +179,8 @@ catch(e){
   }
   if (e instanceof Prisma.PrismaClientInitializationError) {
     res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }else{
+    res.json({error:true,msg:e})
   }
 }
 
@@ -190,7 +200,7 @@ app.put('/atualizar', async (req, res) => {
     },
     data: {
       endereco: membro.endereco,
-      numero: parseInt(membro.numero),
+      numero: membro.numero,
       bairro: membro.bairro,
       cidade: membro.cidade,
       membros: {
@@ -217,6 +227,7 @@ app.put('/atualizar', async (req, res) => {
     }
 
   })
+  console.log(membro.telefone)
   res.json(response)
 }
 catch(e){
@@ -225,6 +236,8 @@ catch(e){
   }
   if (e instanceof Prisma.PrismaClientInitializationError) {
     res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }else{
+    res.json({error:true,msg:e})
   }
 }
 })
@@ -257,6 +270,8 @@ catch(e){
   }
   if (e instanceof Prisma.PrismaClientInitializationError) {
     res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+  }else{
+    res.json({error:true,msg:e})
   }
 }
 })
