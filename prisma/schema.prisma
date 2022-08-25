@@ -25,7 +25,7 @@ model logradouro {
 model membros {
   id            Int        @id @default(autoincrement())
   nome          String
-  telefone      String     @db.VarChar(20)
+  telefone      String?    @db.VarChar(20)
   pai           String
   mae           String
   dtNascimento  DateTime   @db.Date
