@@ -23,17 +23,27 @@ model logradouro {
 }
 
 model membros {
-  id            Int        @id @default(autoincrement())
-  nome          String
-  telefone      String?    @db.VarChar(20)
-  pai           String
-  mae           String
-  dtNascimento  DateTime   @db.Date
-  dtBatismo     DateTime   @db.Date
-  estCivil      String
-  id_cargo      Int
-  id_logradouro Int
-  url_foto      Json?
-  cargo         cargo      @relation(fields: [id_cargo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_membros_cargos")
-  logradouro    logradouro @relation(fields: [id_logradouro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_membros_logradouro")
+  id             Int         @id @default(autoincrement())
+  nome           String
+  telefone       String?     @db.VarChar(20)
+  pai            String
+  mae            String
+  dtNascimento   DateTime    @db.Date
+  dtBatismo      DateTime    @db.Date
+  estCivil       String
+  id_cargo       Int
+  id_logradouro  Int
+  url_foto       Json?
+  id_congregacao Int
+  cargo          cargo       @relation(fields: [id_cargo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_membros_cargos")
+  congregacao    congregacao @relation(fields: [id_congregacao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_membros_congregacao")
+  logradouro     logradouro  @relation(fields: [id_logradouro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_membros_logradouro")
+
+  @@index([id_congregacao], map: "fki_membros_congregacao")
+}
+
+model congregacao {
+  id      Int       @id @default(autoincrement())
+  nome    String    @db.VarChar(50)
+  membros membros[]
 }
