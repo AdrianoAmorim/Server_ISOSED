@@ -100,6 +100,25 @@ app.get('/cargos', async (req, res) => {
     }
   }
 })
+
+//BUSCA TODAS AS CONGREGACOES CADASTRADAS
+app.get('/congregacoes', async (req, res) => {
+  try{
+  const congregacoes = await prisma.congregacao.findMany();
+  res.json(congregacoes);
+  }
+  catch(e){
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+    }else{
+      res.json({error:true,msg:e})
+    }
+  }
+})
+
 //Busca O MEMBRO SELECIONADO PELO ID
 app.get("/membro/:id", async (req, res) => {
   const { id } = req.params;
@@ -120,6 +139,11 @@ app.get("/membro/:id", async (req, res) => {
       cargo:{
         select:{
           nome: true
+        }
+      },
+      congregacao:{
+        select:{
+          nome:true
         }
       }
     }
@@ -163,6 +187,7 @@ try{
           dtBatismo: dtBatismo,
           estCivil: membro.estCivil,
           id_cargo: membro.id_cargo,
+          id_congregacao: membro.id_congregacao,
           url_foto: membro.url_foto ? membro.url_foto : undefined
         }
       }
@@ -217,6 +242,7 @@ app.put('/atualizar', async (req, res) => {
             dtBatismo: dtBatismo,
             estCivil: membro.estCivil,
             id_cargo: membro.id_cargo,
+          id_congregacao: membro.id_congregacao,
             url_foto: membro.url_foto ? membro.url_foto : undefined
           }
         }
@@ -227,7 +253,6 @@ app.put('/atualizar', async (req, res) => {
     }
 
   })
-  console.log(membro.telefone)
   res.json(response)
 }
 catch(e){
