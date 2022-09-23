@@ -166,6 +166,7 @@ catch(e){
 //CADASTRAR NOVO cargo
 app.post('/cadCargo',async (req,res) =>{
   const cargo = req.body
+  console.log(cargo)
   try {
     const response = await prisma.cargo.create({
       data:{
@@ -191,6 +192,7 @@ app.post('/cadCargo',async (req,res) =>{
 //CADASTRAR NOVA CONGREGAÇÃO
 app.post('/cadCongregacao',async (req,res) =>{
   const congregacao = req.body
+  console.log(congregacao)
   try {
     const response = await prisma.congregacao.create({
       data:{
@@ -200,7 +202,9 @@ app.post('/cadCongregacao',async (req,res) =>{
         id: true
       }
     })
+    console.log(response)
   res.json(response)
+
   } catch (e) {
     if (e instanceof Prisma.PrismaClientValidationError) {
       res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
