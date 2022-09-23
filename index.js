@@ -162,6 +162,57 @@ catch(e){
   }
 }
 });
+
+//CADASTRAR NOVO cargo
+app.post('/cadCargo',async (req,res) =>{
+  const cargo = req.body
+  try {
+    const response = await prisma.cargo.create({
+      data:{
+        nome: cargo.nome
+      },
+      select: {
+        id: true
+      }
+    })
+  res.json(response)
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+    }else{
+      res.json({error:true,msg:e})
+    }
+  }
+});
+
+//CADASTRAR NOVA CONGREGAÇÃO
+app.post('/cadCongregacao',async (req,res) =>{
+  const congregacao = req.body
+  try {
+    const response = await prisma.congregacao.create({
+      data:{
+        nome: congregacao.nome
+      },
+      select: {
+        id: true
+      }
+    })
+  res.json(response)
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({error:true,msg:"Erro de sintaxe ou campo Obrigatório Vazio!!"})
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({error:true,msg:"Erro de Conexão com o Banco de Dados!!"})
+    }else{
+      res.json({error:true,msg:e})
+    }
+  }
+});
+
 //CADASTRAR NOVO MEMBRO
 app.post('/cadastrar', async (req, res) => {
   const membro = req.body
@@ -266,7 +317,7 @@ catch(e){
   }
 }
 })
-//DELETAR O MEMBRO ESCOLHIDO P EDITAR
+//DELETAR O MEMBRO ESCOLHIDO 
 app.delete('/deletar', async (req, res) => {
   const ids = await req.body
 try{
