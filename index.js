@@ -42,7 +42,70 @@ app.get('/membros', async (req, res) => {
     }
   }
 })
+//BUSCAR CONGREGACAO OU CARGO NA CONFIGURAÇÃO
+app.get('/buscarCongregacoes', async (req,res) =>{
+const nomeItem = req.query.nome;
+try {
+  const congregacoes = await prisma.congregacao.findMany({
+    where:{
+      nome:{
+        startsWith: nomeItem,
+        mode: 'insensitive'
+      }
+    },
+    select:{
+      id:true,
+      nome:true
+    },
+    orderBy: {
+      nome: "asc"
+    }
+  })
+  res.json(congregacoes)
+} catch (e) {
+  if (e instanceof Prisma.PrismaClientValidationError) {
 
+    res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+  }
+  if (e instanceof Prisma.PrismaClientInitializationError) {
+    res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+  } else {
+    res.json({ error: true, msg: e })
+  }
+}
+})  
+
+app.get('/buscarCargos', async (req,res) =>{
+  const nomeItem = req.query.nome;
+  try {
+    const congregacoes = await prisma.cargo.findMany({
+      where:{
+        nome:{
+          startsWith: nomeItem,
+          mode: 'insensitive'
+        }
+      },
+      select:{
+        id:true,
+        nome:true
+      },
+      orderBy: {
+        nome: "asc"
+      }
+    })
+    res.json(congregacoes)
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+  
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+  })  
 //BUSCA OS MEMBROS NO CAMPO DE BUSCA DA HOME
 app.get('/buscar', async (req, res) => {
   const nome = req.query.nome
