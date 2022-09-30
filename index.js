@@ -42,6 +42,7 @@ app.get('/membros', async (req, res) => {
     }
   }
 })
+
 //BUSCAR CONGREGACAO OU CARGO NA CONFIGURAÇÃO
 app.get('/buscarCongregacoes', async (req,res) =>{
 const nomeItem = req.query.nome;
@@ -105,7 +106,8 @@ app.get('/buscarCargos', async (req,res) =>{
       res.json({ error: true, msg: e })
     }
   }
-  })  
+  }) 
+
 //BUSCA OS MEMBROS NO CAMPO DE BUSCA DA HOME
 app.get('/buscar', async (req, res) => {
   const nome = req.query.nome
@@ -392,6 +394,27 @@ app.put('/atualizar', async (req, res) => {
     }
   }
 })
+
+//DELETAR CARGO E CONGREGACAO
+app.delete('/deletarCargo',async (req,res) =>{
+  const id = req.body
+  try {
+    const response = await prisma.cargo.delete({
+      where:{
+        id: parseInt(id.id_cargo)
+      },
+      select:{
+        id:true
+      }
+
+    })
+    res.json(response)
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+
 //DELETAR O MEMBRO ESCOLHIDO 
 app.delete('/deletar', async (req, res) => {
   const ids = await req.body
