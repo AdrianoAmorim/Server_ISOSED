@@ -398,6 +398,7 @@ app.put('/atualizar', async (req, res) => {
 //DELETAR CARGO E CONGREGACAO
 app.delete('/deletarCargo',async (req,res) =>{
   const id = req.body
+  console.log(id)
   try {
     const response = await prisma.cargo.delete({
       where:{
