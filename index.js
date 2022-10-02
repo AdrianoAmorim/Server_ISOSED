@@ -3,6 +3,7 @@ const { PrismaClient, Prisma } = require('@prisma/client');
 const app = express()
 const cors = require('cors');
 var moment = require('moment');
+const { response } = require('express');
 const prisma = new PrismaClient()
 app.use(cors())
 app.use(express.json({ limit: '50mb' }))
@@ -398,18 +399,57 @@ app.put('/atualizar', async (req, res) => {
 //DELETAR CARGO E CONGREGACAO
 app.delete('/deletarCargo',async (req,res) =>{
   const id = req.body
-  console.log(id)
+  var responseConsulta = null;
+  var resultFor = null;
   try {
-    const response = await prisma.cargo.delete({
+    responseConsulta = await prisma.membros.findMany({
       where:{
-        id: parseInt(id.id_cargo)
+        id_cargo: parseInt(id.id_cargo)
       },
       select:{
         id:true
       }
+    });
+    if(responseConsulta.length > 0){
+      for(var i = 0; i < responseConsulta.length ; i++){
+          resultFor = await prisma.membros.update({
+           where:{
+            id: parseInt(responseConsulta[i].id)
+           },
+           data:{
+            id_cargo: 1
+           },
+           select:{
+            id:true
+           }
 
-    })
-    res.json(response)
+          })
+      }
+      responseConsulta = await prisma.cargo.delete({
+          where:{
+            id: parseInt(id.id_cargo)
+          },
+          select:{
+            id:true
+          }
+    
+        })
+    
+
+
+
+    }else{
+      responseConsulta = await prisma.cargo.delete({
+        where:{
+          id: parseInt(id.id_cargo)
+        },
+        select:{
+          id:true
+        }
+  
+      })
+    }
+    res.json(responseConsulta)
   } catch (e) {
     console.log(e)
   }
