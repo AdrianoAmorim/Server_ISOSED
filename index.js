@@ -45,51 +45,19 @@ app.get('/membros', async (req, res) => {
 })
 
 //BUSCAR CONGREGACAO OU CARGO NA CONFIGURAÇÃO
-app.get('/buscarCongregacoes', async (req,res) =>{
-const nomeItem = req.query.nome;
-try {
-  const congregacoes = await prisma.congregacao.findMany({
-    where:{
-      nome:{
-        startsWith: nomeItem,
-        mode: 'insensitive'
-      }
-    },
-    select:{
-      id:true,
-      nome:true
-    },
-    orderBy: {
-      nome: "asc"
-    }
-  })
-  res.json(congregacoes)
-} catch (e) {
-  if (e instanceof Prisma.PrismaClientValidationError) {
-
-    res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
-  }
-  if (e instanceof Prisma.PrismaClientInitializationError) {
-    res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
-  } else {
-    res.json({ error: true, msg: e })
-  }
-}
-})  
-
-app.get('/buscarCargos', async (req,res) =>{
+app.get('/buscarCongregacoes', async (req, res) => {
   const nomeItem = req.query.nome;
   try {
-    const congregacoes = await prisma.cargo.findMany({
-      where:{
-        nome:{
+    const congregacoes = await prisma.congregacao.findMany({
+      where: {
+        nome: {
           startsWith: nomeItem,
           mode: 'insensitive'
         }
       },
-      select:{
-        id:true,
-        nome:true
+      select: {
+        id: true,
+        nome: true
       },
       orderBy: {
         nome: "asc"
@@ -98,7 +66,7 @@ app.get('/buscarCargos', async (req,res) =>{
     res.json(congregacoes)
   } catch (e) {
     if (e instanceof Prisma.PrismaClientValidationError) {
-  
+
       res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
     }
     if (e instanceof Prisma.PrismaClientInitializationError) {
@@ -107,7 +75,39 @@ app.get('/buscarCargos', async (req,res) =>{
       res.json({ error: true, msg: e })
     }
   }
-  }) 
+})
+
+app.get('/buscarCargos', async (req, res) => {
+  const nomeItem = req.query.nome;
+  try {
+    const congregacoes = await prisma.cargo.findMany({
+      where: {
+        nome: {
+          startsWith: nomeItem,
+          mode: 'insensitive'
+        }
+      },
+      select: {
+        id: true,
+        nome: true
+      },
+      orderBy: {
+        nome: "asc"
+      }
+    })
+    res.json(congregacoes)
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
 
 //BUSCA OS MEMBROS NO CAMPO DE BUSCA DA HOME
 app.get('/buscar', async (req, res) => {
@@ -397,61 +397,67 @@ app.put('/atualizar', async (req, res) => {
 })
 
 //DELETAR CARGO E CONGREGACAO
-app.delete('/deletarCargo',async (req,res) =>{
+app.delete('/deletarCargo', async (req, res) => {
   const id = req.body
   var responseConsulta = null;
   var resultFor = null;
   try {
     responseConsulta = await prisma.membros.findMany({
-      where:{
+      where: {
         id_cargo: parseInt(id.id_cargo)
       },
-      select:{
-        id:true
+      select: {
+        id: true
       }
     });
-    if(responseConsulta.length > 0){
-      for(var i = 0; i < responseConsulta.length ; i++){
-          resultFor = await prisma.membros.update({
-           where:{
+    if (responseConsulta.length > 0) {
+      for (var i = 0; i < responseConsulta.length; i++) {
+        resultFor = await prisma.membros.update({
+          where: {
             id: parseInt(responseConsulta[i].id)
-           },
-           data:{
+          },
+          data: {
             id_cargo: 1
-           },
-           select:{
-            id:true
-           }
+          },
+          select: {
+            id: true
+          }
 
-          })
+        })
       }
-      responseConsulta = await prisma.cargo.delete({
-          where:{
+      if (resultFor.id > 0) {
+        responseConsulta = await prisma.cargo.delete({
+          where: {
             id: parseInt(id.id_cargo)
           },
-          select:{
-            id:true
+          select: {
+            id: true
           }
-    
         })
-    
-
-
-
-    }else{
+      } else {
+        res.json({msg:"Erro ao Atualizar os Cargos dos Membros"})
+      }
+    } else {
       responseConsulta = await prisma.cargo.delete({
-        where:{
+        where: {
           id: parseInt(id.id_cargo)
         },
-        select:{
-          id:true
+        select: {
+          id: true
         }
-  
+
       })
     }
     res.json(responseConsulta)
   } catch (e) {
-    console.log(e)
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
   }
 })
 
