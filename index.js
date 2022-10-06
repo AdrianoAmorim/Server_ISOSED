@@ -397,6 +397,70 @@ app.put('/atualizar', async (req, res) => {
 })
 
 //DELETAR CARGO E CONGREGACAO
+app.delete('/deletarCongregacao', async (req, res) => {
+  const id = req.body
+  var responseConsulta = null;
+  var resultFor = null;
+  try {
+    responseConsulta = await prisma.membros.findMany({
+      where: {
+        id_congregacao: parseInt(id.id_congregacao)
+      },
+      select: {
+        id: true
+      }
+    });
+    if (responseConsulta.length > 0) {
+      for (var i = 0; i < responseConsulta.length; i++) {
+        resultFor = await prisma.membros.update({
+          where: {
+            id: parseInt(responseConsulta[i].id)
+          },
+          data: {
+            id_congregacao: 1
+          },
+          select: {
+            id: true
+          }
+
+        })
+      }
+      if (resultFor.id > 0) {
+        responseConsulta = await prisma.congregacao.delete({
+          where: {
+            id: parseInt(id.id_congregacao)
+          },
+          select: {
+            id: true
+          }
+        })
+      } else {
+        res.json({msg:"Erro ao Atualizar a Congregação deste Membro"})
+      }
+    } else {
+      responseConsulta = await prisma.congregacao.delete({
+        where: {
+          id: parseInt(id.id_congregacao)
+        },
+        select: {
+          id: true
+        }
+
+      })
+    }
+    res.json(responseConsulta)
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
+
 app.delete('/deletarCargo', async (req, res) => {
   const id = req.body
   var responseConsulta = null;
