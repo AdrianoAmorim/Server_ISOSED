@@ -396,6 +396,36 @@ app.put('/atualizar', async (req, res) => {
   }
 })
 
+//ATUALIZAR O CARGO E A CONGREGACAO
+app.put('/atualizarCargo', async (req, res) => {
+  const cargo = req.body
+  console.log(cargo)
+  try {
+    const response = await prisma.cargo.update({
+      where: {
+        id: parseInt(cargo.id)
+      },
+      data: {
+       nome: cargo.nome
+      },
+      select: {
+        id: true
+      }
+    })
+    res.json(response)
+  }
+  catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
+
 //DELETAR CARGO E CONGREGACAO
 app.delete('/deletarCongregacao', async (req, res) => {
   const id = req.body
