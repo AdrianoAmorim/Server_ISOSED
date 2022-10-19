@@ -427,7 +427,6 @@ app.put('/atualizarCongregacao', async (req, res) => {
 
 app.put('/atualizarCargo', async (req, res) => {
   const cargo = req.body
-  console.log(cargo)
   try {
     const response = await prisma.cargo.update({
       where: {
