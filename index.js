@@ -80,7 +80,7 @@ app.get('/buscarCongregacoes', async (req, res) => {
 app.get('/buscarCargos', async (req, res) => {
   const nomeItem = req.query.nome;
   try {
-    const congregacoes = await prisma.cargo.findMany({
+    const cargos = await prisma.cargo.findMany({
       where: {
         nome: {
           startsWith: nomeItem,
@@ -95,7 +95,7 @@ app.get('/buscarCargos', async (req, res) => {
         nome: "asc"
       }
     })
-    res.json(congregacoes)
+    res.json(cargos)
   } catch (e) {
     if (e instanceof Prisma.PrismaClientValidationError) {
 
