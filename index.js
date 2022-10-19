@@ -149,15 +149,20 @@ app.get('/buscar', async (req, res) => {
     }
   }
 })
-//Busca TODOS OS CARGOS EXISTENTES
+//Busca TODOS OS CARGOS EXISTENTES exceto a id1 Default
 app.get('/cargos', async (req, res) => {
   try {
-    const cargos = await prisma.cargo.findMany(
-      {
-        orderBy: {
-          nome: "asc"
+    const cargos = await prisma.cargo.findMany({
+      where: {
+        id: {
+          not: 1
         }
+      },
+      orderBy: {
+        nome: "asc"
       }
+    }
+
     );
     res.json(cargos);
   }
@@ -173,10 +178,15 @@ app.get('/cargos', async (req, res) => {
   }
 })
 
-//BUSCA TODAS AS CONGREGACOES CADASTRADAS
+//BUSCA TODAS AS CONGREGACOES CADASTRADAS exceto a id1 Default
 app.get('/congregacoes', async (req, res) => {
   try {
     const congregacoes = await prisma.congregacao.findMany({
+      where: {
+        id: {
+          not: 1
+        }
+      },
       orderBy: {
         nome: "asc"
       }
@@ -405,7 +415,7 @@ app.put('/atualizarCongregacao', async (req, res) => {
         id: parseInt(congregacao.id)
       },
       data: {
-       nome: congregacao.nome
+        nome: congregacao.nome
       },
       select: {
         id: true
@@ -433,7 +443,7 @@ app.put('/atualizarCargo', async (req, res) => {
         id: parseInt(cargo.id)
       },
       data: {
-       nome: cargo.nome
+        nome: cargo.nome
       },
       select: {
         id: true
@@ -492,7 +502,7 @@ app.delete('/deletarCongregacao', async (req, res) => {
           }
         })
       } else {
-        res.json({msg:"Erro ao Atualizar a Congregação deste Membro"})
+        res.json({ msg: "Erro ao Atualizar a Congregação deste Membro" })
       }
     } else {
       responseConsulta = await prisma.congregacao.delete({
@@ -556,7 +566,7 @@ app.delete('/deletarCargo', async (req, res) => {
           }
         })
       } else {
-        res.json({msg:"Erro ao Atualizar os Cargos dos Membros"})
+        res.json({ msg: "Erro ao Atualizar os Cargos dos Membros" })
       }
     } else {
       responseConsulta = await prisma.cargo.delete({
