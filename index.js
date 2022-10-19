@@ -3,7 +3,6 @@ const { PrismaClient, Prisma } = require('@prisma/client');
 const app = express()
 const cors = require('cors');
 var moment = require('moment');
-const { response } = require('express');
 const prisma = new PrismaClient()
 app.use(cors())
 app.use(express.json({ limit: '50mb' }))
