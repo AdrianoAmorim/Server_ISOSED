@@ -149,8 +149,51 @@ app.get('/buscar', async (req, res) => {
     }
   }
 })
-//Busca TODOS OS CARGOS EXISTENTES exceto a id1 Default
+//BUSCA TODOS OS CARGOS E CONGREGACOES EXISTENTES
 app.get('/cargos', async (req, res) => {
+  try {
+    const cargos = await prisma.cargo.findMany({
+      orderBy: {
+        nome: "asc"
+      }
+    }
+
+    );
+    res.json(cargos);
+  }
+  catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
+app.get('/congregacoes', async (req, res) => {
+  try {
+    const congregacoes = await prisma.congregacao.findMany({
+      orderBy: {
+        nome: "asc"
+      }
+    });
+    res.json(congregacoes);
+  }
+  catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
+//Busca TODOS OS CARGOS ou congregacoes EXISTENTES exceto a id1 Default
+app.get('/configCargos', async (req, res) => {
   try {
     const cargos = await prisma.cargo.findMany({
       where: {
@@ -178,8 +221,7 @@ app.get('/cargos', async (req, res) => {
   }
 })
 
-//BUSCA TODAS AS CONGREGACOES CADASTRADAS exceto a id1 Default
-app.get('/congregacoes', async (req, res) => {
+app.get('/configCongregacoes', async (req, res) => {
   try {
     const congregacoes = await prisma.congregacao.findMany({
       where: {
