@@ -11,6 +11,9 @@ app.listen(process.env.PORT || 4041, "0.0.0.0", () => {
   console.log("Servidor on!!")
 })
 
+app.get('/teste', async(req,res) =>{
+    res.json({nome:"adriano"})
+})
 //Busca (ID,NOME,URLIMG, NOME CARGOS) DOS MEMBROS PARA LISTAR NA TELA HOME
 app.get('/membros', async (req, res) => {
 
