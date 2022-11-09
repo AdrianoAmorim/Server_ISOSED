@@ -11,9 +11,7 @@ app.listen(process.env.PORT || 4041, "0.0.0.0", () => {
   console.log("Servidor on!!")
 })
 
-app.get('/teste', async(req,res) =>{
-    res.json({nome:"adriano"})
-})
+
 //Busca (ID,NOME,URLIMG, NOME CARGOS) DOS MEMBROS PARA LISTAR NA TELA HOME
 app.get('/membros', async (req, res) => {
 
@@ -55,6 +53,9 @@ app.get('/buscarCongregacoes', async (req, res) => {
         nome: {
           startsWith: nomeItem,
           mode: 'insensitive'
+        },
+        id: {
+          not: 1
         }
       },
       select: {
@@ -87,6 +88,9 @@ app.get('/buscarCargos', async (req, res) => {
         nome: {
           startsWith: nomeItem,
           mode: 'insensitive'
+        },
+        id: {
+          not: 1
         }
       },
       select: {
