@@ -10,7 +10,76 @@ app.use(express.json({ limit: '50mb' }))
 app.listen(process.env.PORT || 4041, "0.0.0.0", () => {
   console.log("Servidor on!!")
 })
+//BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CARGO
+app.get('/qtdMembros_cargo', async (req, res) => {
+  const idCargo = req.body;
+  try {
+    const qtdMembro = await prisma.membros.count({
+      where:{
+        id_cargo: idCargo.id
+      },
+      select: {
+        _all: true
+      }
+    })
+    res.json(qtdMembro)
+  }catch(e){
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
 
+//BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CONGREGACAO
+app.get('/qtdMembros_congregacao', async (req, res) => {
+  const idCongregacao = req.body;
+  try {
+    const qtdMembro = await prisma.membros.count({
+      where:{
+        id_congregacao: idCongregacao.id
+      },
+      select: {
+        _all: true
+      }
+    })
+    res.json(qtdMembro)
+  }catch(e){
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
+
+//Busca a Quantidade de Membros Cadastrado
+app.get('/qtdMembros', async (req, res) => {
+  try {
+    const qtdMembro = await prisma.membros.count({
+      select: {
+        _all: true
+      }
+    })
+    res.json(qtdMembro)
+  }catch(e){
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
 
 //Busca (ID,NOME,URLIMG, NOME CARGOS) DOS MEMBROS PARA LISTAR NA TELA HOME
 app.get('/membros', async (req, res) => {
@@ -300,7 +369,6 @@ app.get("/membro/:id", async (req, res) => {
 //CADASTRAR NOVO cargo
 app.post('/cadCargo', async (req, res) => {
   const cargo = req.body
-  console.log(cargo)
   try {
     const response = await prisma.cargo.create({
       data: {
