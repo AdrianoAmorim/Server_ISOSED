@@ -75,9 +75,62 @@ app.get('/relatorio_membros_congregacao', async (req, res) => {
   }
 })
 
+//BUSCA A LISTA DE MEMBROS CADASTRADOS POR CARGO + CONGREGACOES
+app.get('/relatorio_membros_congregacao_cargo', async (req, res) => {
+  const dados = req.body;
+  try {
+    const listaMembros = await prisma.membros.findMany({
+      where: {
+        id_congregacao: dados.idCongregacao,
+        id_cargo: dados.idCargo
+      },
+      select: {
+        id:true,
+        nome:true
+      }
+    })
+    res.json(listaMembros)
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
+
+//BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CARGO E CONGREGACAO
+app.get('/relatorio_qtdMembros_cargo_congregacao', async (req, res) => {
+  const dados = req.body;
+  try {
+    const qtdMembros = await prisma.membros.count({
+      where: {
+        id_cargo: dados.idCargo,
+        id_congregacao: dados.idCongregacao
+      },
+      select: {
+        _all: true
+      },
+      
+    })
+    res.json(qtdMembros)
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      res.json({ error: true, msg: "Erro de sintaxe ou campo Obrigatório Vazio!!" })
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      res.json({ error: true, msg: "Erro de Conexão com o Banco de Dados!!" })
+    } else {
+      res.json({ error: true, msg: e })
+    }
+  }
+})
 
 //BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CARGO
-app.get('/qtdMembros_cargo', async (req, res) => {
+app.get('/relatorio_qtdMembros_cargo', async (req, res) => {
   const idCargo = req.body;
   try {
     const qtdMembro = await prisma.membros.count({
@@ -102,7 +155,7 @@ app.get('/qtdMembros_cargo', async (req, res) => {
 })
 
 //BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CONGREGACAO
-app.get('/qtdMembros_congregacao', async (req, res) => {
+app.get('/relatorio_qtdMembros_congregacao', async (req, res) => {
   const idCongregacao = req.body;
   try {
     const qtdMembro = await prisma.membros.count({
@@ -127,7 +180,7 @@ app.get('/qtdMembros_congregacao', async (req, res) => {
 })
 
 //Busca a Quantidade de Membros Cadastrado
-app.get('/qtdMembros', async (req, res) => {
+app.get('/relatorio_qtdMembros', async (req, res) => {
   try {
     const qtdMembro = await prisma.membros.count({
       select: {
