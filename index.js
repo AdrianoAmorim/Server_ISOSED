@@ -12,13 +12,33 @@ app.listen(process.env.PORT || 4041, "0.0.0.0", () => {
 })
 //RETORNARA OS ANIVERSARIANTES DO MES SELECIONADO (AINDA EM CONSTRUÇÃO)
 app.get('/aniversariantes', async (req, res) => {
+  const mes = req.query.mes
+  const ano = req.query.ano
+  var dataIn = "-01";
+  var dataFinal = "-31";
+  var dataInCompleta = dataIn.substring(0,0) + ano+"-"+mes+dataIn
+  var dataFinalCompleta = dataFinal.substring(0,0) + ano+"-"+mes+dataFinal
+  var data1 = new Date(dataInCompleta)
+  var data2 = new Date(dataFinalCompleta)
 
+  console.log(data1)
+  console.log(data2)
   const qtdMembro = await prisma.membros.findMany({
     where: {
       dtNascimento: {
-        search: 10
+        gte: new Date(data1),
+        lte: new Date(data2),
       }
     },
+    select: {
+      id: true,
+      nome: true,
+      congregacao:{
+        select:{
+          nome:true
+        }
+      }
+    }
 
   })
   res.json(qtdMembro)
@@ -26,15 +46,20 @@ app.get('/aniversariantes', async (req, res) => {
 
 //BUSCA UMA LISTA DE MEMBROS FILTRANDO POR CARGO OU CONGREGACAO
 app.get('/relatorio_membros_cargo', async (req, res) => {
-  const idCargo = req.body;
+  const idCargo = req.query.idCargo;
   try {
     const listaMembros = await prisma.membros.findMany({
       where: {
-        id_cargo: idCargo.id
+        id_cargo: parseInt(idCargo)
       },
       select: {
-        id:true,
-        nome:true
+        id: true,
+        nome: true,
+        congregacao:{
+          select:{
+            nome:true
+          }
+        }
       }
     })
     res.json(listaMembros)
@@ -51,15 +76,20 @@ app.get('/relatorio_membros_cargo', async (req, res) => {
 })
 
 app.get('/relatorio_membros_congregacao', async (req, res) => {
-  const idCongregacao = req.body;
+  const idCongregacao = req.query.idCongregacao;
   try {
     const listaMembros = await prisma.membros.findMany({
       where: {
-        id_congregacao: idCongregacao.id
+        id_congregacao: parseInt(idCongregacao)
       },
       select: {
-        id:true,
-        nome:true
+        id: true,
+        nome: true,
+        congregacao:{
+          select:{
+            nome:true
+          }
+        }
       }
     })
     res.json(listaMembros)
@@ -77,16 +107,30 @@ app.get('/relatorio_membros_congregacao', async (req, res) => {
 
 //BUSCA A LISTA DE MEMBROS CADASTRADOS POR CARGO + CONGREGACOES
 app.get('/relatorio_membros_congregacao_cargo', async (req, res) => {
-  const dados = req.body;
+  const id_cargo = req.query.idCargo;
+  const id_congregacao = req.query.idCongregacao;
   try {
     const listaMembros = await prisma.membros.findMany({
       where: {
-        id_congregacao: dados.idCongregacao,
-        id_cargo: dados.idCargo
+        AND: [{
+          id_cargo: {
+            equals: parseInt(id_cargo)
+          }
+        },
+        {
+          id_congregacao: {
+            equals: parseInt(id_congregacao)
+          }
+        }]
       },
       select: {
-        id:true,
-        nome:true
+        id: true,
+        nome: true,
+        congregacao:{
+          select:{
+            nome:true
+          }
+        }
       }
     })
     res.json(listaMembros)
@@ -104,17 +148,28 @@ app.get('/relatorio_membros_congregacao_cargo', async (req, res) => {
 
 //BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CARGO E CONGREGACAO
 app.get('/relatorio_qtdMembros_cargo_congregacao', async (req, res) => {
-  const dados = req.body;
+  const id_cargo = req.query.idCargo
+  const id_congregacao = req.query.idCongregacao
+  console.log(id_cargo)
+  console.log(id_congregacao)
   try {
     const qtdMembros = await prisma.membros.count({
       where: {
-        id_cargo: dados.idCargo,
-        id_congregacao: dados.idCongregacao
+        AND: [{
+          id_cargo: {
+            equals: parseInt(id_cargo)
+          }
+        },
+        {
+          id_congregacao: {
+            equals: parseInt(id_congregacao)
+          }
+        }]
       },
       select: {
         _all: true
       },
-      
+
     })
     res.json(qtdMembros)
   } catch (e) {
@@ -131,11 +186,12 @@ app.get('/relatorio_qtdMembros_cargo_congregacao', async (req, res) => {
 
 //BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CARGO
 app.get('/relatorio_qtdMembros_cargo', async (req, res) => {
-  const idCargo = req.body;
+  const idCargo = req.query.id
+  console.log(idCargo)
   try {
     const qtdMembro = await prisma.membros.count({
       where: {
-        id_cargo: idCargo.id
+        id_cargo: parseInt(idCargo)
       },
       select: {
         _all: true
@@ -156,11 +212,11 @@ app.get('/relatorio_qtdMembros_cargo', async (req, res) => {
 
 //BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CONGREGACAO
 app.get('/relatorio_qtdMembros_congregacao', async (req, res) => {
-  const idCongregacao = req.body;
+  const idCongregacao = req.query.id;
   try {
     const qtdMembro = await prisma.membros.count({
       where: {
-        id_congregacao: idCongregacao.id
+        id_congregacao: parseInt(idCongregacao)
       },
       select: {
         _all: true
