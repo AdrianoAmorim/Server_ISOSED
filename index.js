@@ -12,30 +12,47 @@ app.listen(process.env.PORT || 4041, "0.0.0.0", () => {
 })
 //RETORNARA OS ANIVERSARIANTES DO MES SELECIONADO (AINDA EM CONSTRUÇÃO)
 app.get('/aniversariantes', async (req, res) => {
+  //inicia as variaveis com os dias inicial e final do mes
+  var dataInicial = "-01";
+  var dataFinal = "-0";
+  //pega o mes escolhido pelo usuario
   const mes = req.query.mes
-  const ano = req.query.ano
-  var dataIn = "-01";
-  var dataFinal = "-31";
-  var dataInCompleta = dataIn.substring(0,0) + ano+"-"+mes+dataIn
-  var dataFinalCompleta = dataFinal.substring(0,0) + ano+"-"+mes+dataFinal
-  var data1 = new Date(dataInCompleta)
-  var data2 = new Date(dataFinalCompleta)
+  //gera uma instancia da data atual
+  const dataAtual = new Date();
+  //pega o ano da instancia da data
+  const anoAtual = dataAtual.getFullYear();
+  //pega os dias desta data passada no parametro(colocando 0 retorna o total de dias)
+  const data = new Date(anoAtual, mes, 0).getDate()
+  //monta a data inicial com as informacoes obtida
+  dataInicial = dataInicial.substring(0, 0) + anoAtual + "-" + mes + dataInicial
 
-  console.log(data1)
-  console.log(data2)
+  //faz o teste pra saber quantos dias tem o mes escolhido..e monta a data final
+  if (data == 31) {
+    dataFinal = "-31"
+    dataFinal = dataFinal.substring(0, 0) + anoAtual + "-" + mes + dataFinal
+  } else if (data == 30) {
+    dataFinal = "-30"
+    dataFinal = dataFinal.substring(0, 0) + anoAtual + "-" + mes + dataFinal
+  } else if (data == 27) {
+    dataFinal = "-27"
+    dataFinal = dataFinal.substring(0, 0) + anoAtual + "-" + mes + dataFinal
+  } else if (data == 28) {
+    dataFinal = "-28"
+    dataFinal = dataFinal.substring(0, 0) + anoAtual + "-" + mes + dataFinal
+  }
   const qtdMembro = await prisma.membros.findMany({
     where: {
       dtNascimento: {
-        gte: new Date(data1),
-        lte: new Date(data2),
+        gte: new Date(dataInicial),
+        lte: new Date(dataFinal),
       }
     },
     select: {
       id: true,
       nome: true,
-      congregacao:{
-        select:{
-          nome:true
+      congregacao: {
+        select: {
+          nome: true
         }
       }
     }
@@ -55,9 +72,9 @@ app.get('/relatorio_membros_cargo', async (req, res) => {
       select: {
         id: true,
         nome: true,
-        congregacao:{
-          select:{
-            nome:true
+        congregacao: {
+          select: {
+            nome: true
           }
         }
       }
@@ -85,9 +102,9 @@ app.get('/relatorio_membros_congregacao', async (req, res) => {
       select: {
         id: true,
         nome: true,
-        congregacao:{
-          select:{
-            nome:true
+        congregacao: {
+          select: {
+            nome: true
           }
         }
       }
@@ -126,9 +143,9 @@ app.get('/relatorio_membros_congregacao_cargo', async (req, res) => {
       select: {
         id: true,
         nome: true,
-        congregacao:{
-          select:{
-            nome:true
+        congregacao: {
+          select: {
+            nome: true
           }
         }
       }
