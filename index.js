@@ -10,7 +10,7 @@ app.use(express.json({ limit: '50mb' }))
 app.listen(process.env.PORT || 4041, "0.0.0.0", () => {
   console.log("Servidor on!!")
 })
-//RETORNARA OS ANIVERSARIANTES DO MES SELECIONADO (AINDA EM CONSTRUÇÃO)
+//RETORNA OS ANIVERSARIANTES DO MES SELECIONADO
 app.get('/aniversariantes', async (req, res) => {
   //inicia as variaveis com os dias inicial e final do mes
   var dataInicial = "-01";
@@ -50,11 +50,20 @@ app.get('/aniversariantes', async (req, res) => {
     select: {
       id: true,
       nome: true,
+      telefone:true,
+      cargo:{
+        select:{
+          nome:true
+        }
+      },
       congregacao: {
         select: {
           nome: true
         }
       }
+    },
+    orderBy: {
+      nome: "asc"
     }
 
   })
@@ -72,11 +81,20 @@ app.get('/relatorio_membros_cargo', async (req, res) => {
       select: {
         id: true,
         nome: true,
+        telefone:true,
+        cargo:{
+          select:{
+            nome:true
+          }
+        },
         congregacao: {
           select: {
             nome: true
           }
         }
+      },
+      orderBy: {
+        nome: "asc"
       }
     })
     res.json(listaMembros)
@@ -101,12 +119,21 @@ app.get('/relatorio_membros_congregacao', async (req, res) => {
       },
       select: {
         id: true,
-        nome: true,
+        nome: true, 
+        telefone:true,
+        cargo:{
+          select:{
+            nome:true
+          }
+        },
         congregacao: {
           select: {
             nome: true
           }
         }
+      },
+      orderBy: {
+        nome: "asc"
       }
     })
     res.json(listaMembros)
@@ -143,11 +170,20 @@ app.get('/relatorio_membros_congregacao_cargo', async (req, res) => {
       select: {
         id: true,
         nome: true,
+        telefone:true,
+        cargo:{
+          select:{
+            nome:true
+          }
+        },
         congregacao: {
           select: {
             nome: true
           }
         }
+      },
+      orderBy: {
+        nome: "asc"
       }
     })
     res.json(listaMembros)
