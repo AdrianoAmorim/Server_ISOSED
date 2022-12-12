@@ -50,7 +50,7 @@ app.get('/aniversariantes', async (req, res) => {
     select: {
       id: true,
       nome: true,
-      telefone:true,
+      dtNascimento:true,
       cargo:{
         select:{
           nome:true
