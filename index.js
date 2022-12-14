@@ -3,15 +3,140 @@ const { PrismaClient, Prisma } = require('@prisma/client');
 const app = express()
 const cors = require('cors');
 var moment = require('moment');
-const prisma = new PrismaClient()
-app.use(cors())
-app.use(express.json({ limit: '50mb' }))
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const prisma = new PrismaClient();
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
 
-app.listen(process.env.PORT || 4041, "0.0.0.0", () => {
-  console.log("Servidor on!!")
+//MIDDLE PARA CHECAR O TOKEN DE ACESSO AS ROTAS
+function checarToken(req, res, next) {
+  //pega do header o token passado pelo frontend
+  const authHeader = req.headers['authorization'];
+  //separa a nomenclatura token do hash(token)
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  //validacao e teste do token
+  if(token == null) {
+    console.log("to no null")
+    return res.json({ aviso: true, msg: "Acesso Negado" })
+  }else{
+    try {
+      const secret = process.env.SECRET
+      jwt.verify(token, secret)
+      next()
+    } catch (e) {
+      return res.json({ error: true, msg: "Acesso Negado - Token inválido!" })
+    }
+  }
+}
+//------------------------------------------
+
+
+//CADASTRAR O USUARIO DO SISTEMA
+app.post('/cad_usuario', async (req, res) => {
+  const { nome, password } = req.body;
+
+  //VALIDA AS INFORMACOES - SE NAO ESTAO VAZIAS
+  if (!nome) {
+    return res.json({ msg: "Campo Usuário obrigatório!" })
+  } if (!password) {
+    return res.json({ msg: "Campo Senha Obrigatório" })
+  } else {
+    //Dificultar ainda mais a senha - coloca digitos a mais
+    const salt = await bcrypt.genSalt(8);
+    //Cria o hash da senha com a senha do usuairo e o dificultador
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    try {
+      //FAZ UMA CONSULTA PARA VALIDAR SE O USUARIO NAO EXISTE
+      const usuarioExiste = await prisma.usuarios.findMany({
+        where: {
+          nome: {
+            equals: nome
+          }
+        },
+        select: {
+          id: true
+        }
+      })
+      console.log(usuarioExiste.length)
+      //SE NAO EXISTIR CRIA O USUARIO NO BANCO
+      if (usuarioExiste.length == 0) {
+        const response = await prisma.usuarios.create({
+          data: {
+            nome: nome,
+            password: passwordHash
+          },
+          select: {
+            id: true
+          }
+        })
+        return res.json({ msg: response })
+      } else {
+        return res.json({ msg: "Usuário existente, Favor escolha outro usuário!" })
+      }
+
+    } catch (e) {
+      console.log(e)
+      return res.json({ msg: "Houve um erro No cadastro de Novo Usuario: " + e.message })
+    }
+
+  }
 })
+
+//LOGAR E GERAR O TOKEN DO USUARIO
+app.post('/login', async (req, res) => {
+  const { nome, password } = req.body;
+  //VALIDA AS INFORMACOES - SE NAO ESTAO VAZIAS
+  if (!nome) {
+    return res.json({ aviso: true, msg: "Campo Usuário obrigatório!" })
+  }
+  if (!password) {
+    return res.json({ aviso: true, msg: "Campo Senha Obrigatório" })
+  }
+
+  //requisicao CHECKA SE EXISTE O USUARIO
+
+  const usuarioExiste = await prisma.usuarios.findFirst({
+    where: {
+      nome: {
+        equals: nome
+      }
+    }
+  })
+
+  //CHECA SE O USUARIO EXISTE SE EXISTE CHECA SE A SENHA ESTA CORRETA 
+  if (!usuarioExiste) {
+    return res.json({ aviso: true, msg: "Usuario nao Encontrado!!" })
+  } else {
+    //CHECA A SENHA SE ESTA CORRETA
+    const passwordChecked = await bcrypt.compare(password, usuarioExiste.password);
+    if (!passwordChecked) {
+      return res.json({ aviso: true, msg: "senha incorreta" })
+    }
+  }
+
+  //criar o token para enviar pro front
+  try {
+    //passa a hash criada por nos no .env
+    const secret = process.env.SECRET;
+    //cria o token com o id do usuario e o secret criado por nos
+    const token = jwt.sign({
+      id: usuarioExiste.id
+    },
+      secret
+    )
+    return res.json({ msg: "Bem-vindo " + usuarioExiste.nome, token })
+  } catch (e) {
+    return res.json({ error: true, msg: "Houve Um erro na autenticação do Usuário!" })
+  }
+
+})
+
+
 //RETORNA OS ANIVERSARIANTES DO MES SELECIONADO
-app.get('/aniversariantes', async (req, res) => {
+app.get('/aniversariantes',checarToken, async (req, res) => {
   //inicia as variaveis com os dias inicial e final do mes
   var dataInicial = "-01";
   var dataFinal = "-0";
@@ -40,38 +165,45 @@ app.get('/aniversariantes', async (req, res) => {
     dataFinal = "-28"
     dataFinal = dataFinal.substring(0, 0) + anoAtual + "-" + mes + dataFinal
   }
-  const qtdMembro = await prisma.membros.findMany({
-    where: {
-      dtNascimento: {
-        gte: new Date(dataInicial),
-        lte: new Date(dataFinal),
-      }
-    },
-    select: {
-      id: true,
-      nome: true,
-      dtNascimento:true,
-      cargo:{
-        select:{
-          nome:true
+
+  try {
+    const qtdMembro = await prisma.membros.findMany({
+      where: {
+        dtNascimento: {
+          gte: new Date(dataInicial),
+          lte: new Date(dataFinal),
         }
       },
-      congregacao: {
-        select: {
-          nome: true
+      select: {
+        id: true,
+        nome: true,
+        dtNascimento: true,
+        cargo: {
+          select: {
+            nome: true
+          }
+        },
+        congregacao: {
+          select: {
+            nome: true
+          }
         }
+      },
+      orderBy: {
+        nome: "asc"
       }
-    },
-    orderBy: {
-      nome: "asc"
-    }
 
-  })
+    })
+  } catch (e) {
+    console.log(e)
+  }
+
+
   res.json(qtdMembro)
 })
 
 //BUSCA UMA LISTA DE MEMBROS FILTRANDO POR CARGO OU CONGREGACAO
-app.get('/relatorio_membros_cargo', async (req, res) => {
+app.get('/relatorio_membros_cargo',checarToken, async (req, res) => {
   const idCargo = req.query.idCargo;
   try {
     const listaMembros = await prisma.membros.findMany({
@@ -81,10 +213,10 @@ app.get('/relatorio_membros_cargo', async (req, res) => {
       select: {
         id: true,
         nome: true,
-        telefone:true,
-        cargo:{
-          select:{
-            nome:true
+        telefone: true,
+        cargo: {
+          select: {
+            nome: true
           }
         },
         congregacao: {
@@ -110,7 +242,7 @@ app.get('/relatorio_membros_cargo', async (req, res) => {
   }
 })
 
-app.get('/relatorio_membros_congregacao', async (req, res) => {
+app.get('/relatorio_membros_congregacao',checarToken, async (req, res) => {
   const idCongregacao = req.query.idCongregacao;
   try {
     const listaMembros = await prisma.membros.findMany({
@@ -119,11 +251,11 @@ app.get('/relatorio_membros_congregacao', async (req, res) => {
       },
       select: {
         id: true,
-        nome: true, 
-        telefone:true,
-        cargo:{
-          select:{
-            nome:true
+        nome: true,
+        telefone: true,
+        cargo: {
+          select: {
+            nome: true
           }
         },
         congregacao: {
@@ -150,7 +282,7 @@ app.get('/relatorio_membros_congregacao', async (req, res) => {
 })
 
 //BUSCA A LISTA DE MEMBROS CADASTRADOS POR CARGO + CONGREGACOES
-app.get('/relatorio_membros_congregacao_cargo', async (req, res) => {
+app.get('/relatorio_membros_congregacao_cargo',checarToken, async (req, res) => {
   const id_cargo = req.query.idCargo;
   const id_congregacao = req.query.idCongregacao;
   try {
@@ -170,10 +302,10 @@ app.get('/relatorio_membros_congregacao_cargo', async (req, res) => {
       select: {
         id: true,
         nome: true,
-        telefone:true,
-        cargo:{
-          select:{
-            nome:true
+        telefone: true,
+        cargo: {
+          select: {
+            nome: true
           }
         },
         congregacao: {
@@ -200,7 +332,7 @@ app.get('/relatorio_membros_congregacao_cargo', async (req, res) => {
 })
 
 //BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CARGO E CONGREGACAO
-app.get('/relatorio_qtdMembros_cargo_congregacao', async (req, res) => {
+app.get('/relatorio_qtdMembros_cargo_congregacao',checarToken, async (req, res) => {
   const id_cargo = req.query.idCargo
   const id_congregacao = req.query.idCongregacao
   console.log(id_cargo)
@@ -238,7 +370,7 @@ app.get('/relatorio_qtdMembros_cargo_congregacao', async (req, res) => {
 })
 
 //BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CARGO
-app.get('/relatorio_qtdMembros_cargo', async (req, res) => {
+app.get('/relatorio_qtdMembros_cargo',checarToken, async (req, res) => {
   const idCargo = req.query.id
   console.log(idCargo)
   try {
@@ -264,7 +396,7 @@ app.get('/relatorio_qtdMembros_cargo', async (req, res) => {
 })
 
 //BUSCA A QUANTIDADE DE MEMBROS CADASTRADOS FILTRANDO POR CONGREGACAO
-app.get('/relatorio_qtdMembros_congregacao', async (req, res) => {
+app.get('/relatorio_qtdMembros_congregacao',checarToken, async (req, res) => {
   const idCongregacao = req.query.id;
   try {
     const qtdMembro = await prisma.membros.count({
@@ -289,7 +421,7 @@ app.get('/relatorio_qtdMembros_congregacao', async (req, res) => {
 })
 
 //Busca a Quantidade de Membros Cadastrado
-app.get('/relatorio_qtdMembros', async (req, res) => {
+app.get('/relatorio_qtdMembros',checarToken, async (req, res) => {
   try {
     const qtdMembro = await prisma.membros.count({
       select: {
@@ -310,7 +442,7 @@ app.get('/relatorio_qtdMembros', async (req, res) => {
 })
 
 //Busca (ID,NOME,URLIMG, NOME CARGOS) DOS MEMBROS PARA LISTAR NA TELA HOME
-app.get('/membros', async (req, res) => {
+app.get('/membros', checarToken, async (req, res) => {
 
   try {
     const membros = await prisma.membros.findMany({
@@ -342,7 +474,7 @@ app.get('/membros', async (req, res) => {
 })
 
 //BUSCAR CONGREGACAO OU CARGO NA CONFIGURAÇÃO
-app.get('/buscarCongregacoes', async (req, res) => {
+app.get('/buscarCongregacoes',checarToken, async (req, res) => {
   const nomeItem = req.query.nome;
   try {
     const congregacoes = await prisma.congregacao.findMany({
@@ -377,7 +509,7 @@ app.get('/buscarCongregacoes', async (req, res) => {
   }
 })
 
-app.get('/buscarCargos', async (req, res) => {
+app.get('/buscarCargos',checarToken, async (req, res) => {
   const nomeItem = req.query.nome;
   try {
     const cargos = await prisma.cargo.findMany({
@@ -413,7 +545,7 @@ app.get('/buscarCargos', async (req, res) => {
 })
 
 //BUSCA OS MEMBROS NO CAMPO DE BUSCA DA HOME
-app.get('/buscar', async (req, res) => {
+app.get('/buscar',checarToken, async (req, res) => {
   const nome = req.query.nome
   try {
     const membros = await prisma.membros.findMany({
@@ -453,7 +585,7 @@ app.get('/buscar', async (req, res) => {
   }
 })
 //BUSCA TODOS OS CARGOS E CONGREGACOES EXISTENTES
-app.get('/cargos', async (req, res) => {
+app.get('/cargos', checarToken, async (req, res) => {
   try {
     const cargos = await prisma.cargo.findMany({
       orderBy: {
@@ -475,7 +607,7 @@ app.get('/cargos', async (req, res) => {
     }
   }
 })
-app.get('/congregacoes', async (req, res) => {
+app.get('/congregacoes',checarToken, async (req, res) => {
   try {
     const congregacoes = await prisma.congregacao.findMany({
       orderBy: {
@@ -496,7 +628,7 @@ app.get('/congregacoes', async (req, res) => {
   }
 })
 //Busca TODOS OS CARGOS ou congregacoes EXISTENTES exceto a id1 Default
-app.get('/configCargos', async (req, res) => {
+app.get('/configCargos',checarToken, async (req, res) => {
   try {
     const cargos = await prisma.cargo.findMany({
       where: {
@@ -524,7 +656,7 @@ app.get('/configCargos', async (req, res) => {
   }
 })
 
-app.get('/configCongregacoes', async (req, res) => {
+app.get('/configCongregacoes',checarToken, async (req, res) => {
   try {
     const congregacoes = await prisma.congregacao.findMany({
       where: {
@@ -551,7 +683,7 @@ app.get('/configCongregacoes', async (req, res) => {
 })
 
 //Busca O MEMBRO SELECIONADO PELO ID
-app.get("/membro/:id", async (req, res) => {
+app.get("/membro/:id",checarToken, async (req, res) => {
   const { id } = req.params;
   try {
     const membro = await prisma.membros.findUnique({
@@ -595,7 +727,7 @@ app.get("/membro/:id", async (req, res) => {
 });
 
 //CADASTRAR NOVO cargo
-app.post('/cadCargo', async (req, res) => {
+app.post('/cadCargo',checarToken, async (req, res) => {
   const cargo = req.body
   try {
     const response = await prisma.cargo.create({
@@ -620,7 +752,7 @@ app.post('/cadCargo', async (req, res) => {
 });
 
 //CADASTRAR NOVA CONGREGAÇÃO
-app.post('/cadCongregacao', async (req, res) => {
+app.post('/cadCongregacao',checarToken, async (req, res) => {
   const congregacao = req.body
   try {
     const response = await prisma.congregacao.create({
@@ -646,7 +778,7 @@ app.post('/cadCongregacao', async (req, res) => {
 });
 
 //CADASTRAR NOVO MEMBRO
-app.post('/cadastrar', async (req, res) => {
+app.post('/cadastrar',checarToken, async (req, res) => {
   const membro = req.body
   var nascimento = moment(membro.dtNascimento).format("YYYY-MM-DD")
   var batismo = moment(membro.dtBatismoo).format("YYYY-MM-DD")
@@ -695,7 +827,7 @@ app.post('/cadastrar', async (req, res) => {
 })
 
 //ATUALIZAR OS  DADOS DO MEMBRO 
-app.put('/atualizar', async (req, res) => {
+app.put('/atualizar',checarToken, async (req, res) => {
   const membro = req.body
   var nascimento = moment(membro.dtNascimento).format("YYYY-MM-DD")
   var batismo = moment(membro.dtBatismo).format("YYYY-MM-DD")
@@ -751,7 +883,7 @@ app.put('/atualizar', async (req, res) => {
 })
 
 //ATUALIZAR O CARGO E A CONGREGACAO
-app.put('/atualizarCongregacao', async (req, res) => {
+app.put('/atualizarCongregacao',checarToken, async (req, res) => {
   const congregacao = req.body
   try {
     const response = await prisma.congregacao.update({
@@ -779,7 +911,7 @@ app.put('/atualizarCongregacao', async (req, res) => {
   }
 })
 
-app.put('/atualizarCargo', async (req, res) => {
+app.put('/atualizarCargo',checarToken, async (req, res) => {
   const cargo = req.body
   try {
     const response = await prisma.cargo.update({
@@ -808,7 +940,7 @@ app.put('/atualizarCargo', async (req, res) => {
 })
 
 //DELETAR CARGO E CONGREGACAO
-app.delete('/deletarCongregacao', async (req, res) => {
+app.delete('/deletarCongregacao',checarToken, async (req, res) => {
   const id = req.body
   var responseConsulta = null;
   var resultFor = null;
@@ -872,7 +1004,7 @@ app.delete('/deletarCongregacao', async (req, res) => {
   }
 })
 
-app.delete('/deletarCargo', async (req, res) => {
+app.delete('/deletarCargo',checarToken, async (req, res) => {
   const id = req.body
   var responseConsulta = null;
   var resultFor = null;
@@ -938,7 +1070,7 @@ app.delete('/deletarCargo', async (req, res) => {
 
 
 //DELETAR O MEMBRO ESCOLHIDO 
-app.delete('/deletar', async (req, res) => {
+app.delete('/deletar',checarToken, async (req, res) => {
   const ids = await req.body
   try {
     let response = await prisma.membros.delete({
@@ -970,4 +1102,8 @@ app.delete('/deletar', async (req, res) => {
       res.json({ error: true, msg: e })
     }
   }
+})
+
+app.listen(process.env.PORT || 4041, "0.0.0.0", () => {
+  console.log("Servidor on!!")
 })

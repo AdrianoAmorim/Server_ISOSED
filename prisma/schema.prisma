@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
 }
 
@@ -48,4 +48,10 @@ model congregacao {
   id      Int       @id @default(autoincrement())
   nome    String    @db.VarChar(50)
   membros membros[]
+}
+
+model usuarios {
+  id       Int    @id @default(autoincrement())
+  nome     String
+  password String
 }
