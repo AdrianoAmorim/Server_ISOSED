@@ -15,7 +15,6 @@ function checarToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   //separa a nomenclatura token do hash(token)
   const token = authHeader && authHeader.split(' ')[1];
-  
   //validacao e teste do token
   if(token == null) {
     console.log("to no null")
@@ -194,12 +193,14 @@ app.get('/aniversariantes',checarToken, async (req, res) => {
       }
 
     })
+    return res.json(qtdMembro);
+
   } catch (e) {
     console.log(e)
+    return res.json({error: true, msg:"error: " + e.message})
   }
 
 
-  res.json(qtdMembro)
 })
 
 //BUSCA UMA LISTA DE MEMBROS FILTRANDO POR CARGO OU CONGREGACAO
@@ -1067,7 +1068,6 @@ app.delete('/deletarCargo',checarToken, async (req, res) => {
     }
   }
 })
-
 
 //DELETAR O MEMBRO ESCOLHIDO 
 app.delete('/deletar',checarToken, async (req, res) => {
