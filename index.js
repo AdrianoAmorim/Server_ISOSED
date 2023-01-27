@@ -1,5 +1,6 @@
 const express = require('express')
 const { PrismaClient, Prisma } = require('@prisma/client');
+const os = require('os');
 const app = express()
 const cors = require('cors');
 var moment = require('moment');
@@ -82,7 +83,7 @@ app.post('/cad_usuario', async (req, res) => {
     }
 
   }
-})
+});
 
 //LOGAR E GERAR O TOKEN DO USUARIO
 app.post('/login', async (req, res) => {
